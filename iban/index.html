@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Benimİbanım — IBAN Yönetimi</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-theme="dark">
+  <header class="header">
+    <div class="wrap">
+      <div class="brand"><i class="fa-solid fa-shield-halved"></i> Benimİbanım</div>
+      <div class="actions">
+        <button class="btn-icon" id="themeBtn" title="Tema Değiştir"><i class="fa-solid fa-moon"></i></button>
+        <button class="btn-icon" id="exportBtn" title="Dışa aktarı"><i class="fa-solid fa-download"></i></button>
+        <button class="btn-icon" id="importBtn" title="İçe aktarı"><i class="fa-solid fa-upload"></i></button>
+        <input type="file" id="importFile" accept="application/json" hidden />
+        <button class="btn btn--primary" id="addBtn"><i class="fa-solid fa-plus"></i> IBAN Ekle</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="filters">
+      <div class="filters-head" id="filters-toggle">
+        <h3>Arama & Filtreleme</h3>
+        <i id="filters-caret" class="fa-solid fa-chevron-down"></i>
+      </div>
+      <div class="filters-body" id="filters-body">
+        <div class="grid">
+          <div class="search">
+            <input id="q" class="input" placeholder="IBAN ara…" />
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <select id="flt" class="select">
+            <option value="all">Tümü</option>
+            <option value="fav">Favoriler</option>
+            <option value="recent">Son Kullanılan</option>
+          </select>
+          <select id="sort" class="select">
+            <option value="name">İsme Göre</option>
+            <option value="bank">Bankaya Göre</option>
+            <option value="date">Tarihe Göre</option>
+            <option value="usage">Kullanıma Göre</option>
+          </select>
+          <!-- Burada ÖNCEKİ ek IBAN Ekle butonu KALDIRILDI -->
+        </div>
+        <div class="stats">
+          <div class="stat"><i class="fa-solid fa-list"></i> <span id="stTotal">0 IBAN</span></div>
+          <div class="stat"><i class="fa-solid fa-star"></i> <span id="stFav">0 Favori</span></div>
+          <div class="stat"><i class="fa-solid fa-clock"></i> <span id="stRec">0 Son Kullanılan</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cards" class="cards" aria-live="polite"></section>
+
+    <div id="empty" class="empty" hidden>
+      <i class="fa-solid fa-university"></i>
+      <h3>Henüz IBAN eklemediniz</h3>
+      <p>İlk IBAN’ınızı ekleyerek başlayın.</p>
+      <br />
+      <button class="btn btn--primary" id="addBtnEmpty"><i class="fa-solid fa-plus"></i> IBAN Ekle</button>
+    </div>
+  </main>
+
+  <button class="fab" id="fab"><i class="fa-solid fa-plus"></i></button>
+
+  <!-- IBAN Ekle/Düzenle Modal -->
+  <div class="modal-wrap" id="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle">
+      <div class="modal-h">
+        <h3 class="m-title" id="mtitle">Yeni IBAN Ekle</h3>
+        <button class="m-close" id="mclose" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-b">
+        <form id="form">
+          <div class="fg">
+            <label class="label" for="name">IBAN Adı *</label>
+            <input id="name" class="input" placeholder="Örn: Ali Veli Hesabı" required />
+          </div>
+          <div class="fg">
+            <label class="label" for="iban">IBAN Numarası *</label>
+            <input id="iban" class="input" placeholder="TR12 3456 7890 1234 5678 90" required />
+            <div class="iban-val" id="ival"><i class="fa-solid fa-info-circle"></i><span>IBAN giriniz</span></div>
+            <div class="bank-prev" id="bprev">
+              <div class="bl"><img id="bimg" alt="" /></div>
+              <div>
+                <div id="bname" style="font-weight:700"></div>
+                <div id="bcode" style="font-size:12px;color:var(--txt-3)"></div>
+              </div>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="label" for="desc">Açıklama</label>
+            <textarea id="desc" class="area" placeholder="Bu IBAN hakkında notlar…"></textarea>
+          </div>
+          <div class="fg">
+            <label class="label">Etiketler</label>
+            <div class="tags-in" id="tags">
+              <input id="tinput" class="tinput" placeholder="Etiket ekle… (Enter)" />
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+            <button type="button" class="btn" id="cancel">İptal</button>
+            <button type="submit" class="btn btn--primary" id="save" disabled><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Modal -->
+  <div class="qr-modal-wrap" id="qrModal">
+    <div class="qr-modal" role="dialog" aria-modal="true" aria-labelledby="qrtitle">
+      <h3 id="qrtitle">IBAN QR Kodu</h3>
+      <div id="qrBig"></div>
+      <button class="close-btn" id="qclose">Kapat</button>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toasts"></div>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
